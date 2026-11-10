@@ -1,0 +1,143 @@
+name: Ibb GIS Z12-Z19 Full Downloader & Permanent Release Publisher
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_region:
+        description: 'Region Code (or "ALL" to run all 29 regions in parallel matrix)'
+        required: false
+        default: 'ALL'
+      max_zoom:
+        description: 'Maximum Zoom Level (up to 19)'
+        required: false
+        default: '19'
+  schedule:
+    # تشغيل تلقائي كل 6 ساعات لاستكمال أي منطقة متبقية حتى تكتمل الـ 3 ملايين بلاطة 100%
+    - cron: '0 */6 * * *'
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: ibb-z19-permanent-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare-release-and-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      regions: ${{ steps.set-matrix.outputs.regions }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Ensure Permanent GitHub Release v1.0-ibb-map Exists
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ! gh release view v1.0-ibb-map >/dev/null 2>&1; then
+            gh release create v1.0-ibb-map \
+              --title "خريطة محافظة إب الكاملة (Z12–Z19) — Google Hybrid & White Roadmap" \
+              --notes "نسخة دائمة وكاملة لخريطة محافظة إب (صورة قمر صناعي + أسماء وشوارع + خريطة طرق بيضاء للطباعة + MBTiles + GeoTIFF WGS84 + KMZ)."
+          fi
+
+      - name: Build Region Execution Matrix
+        id: set-matrix
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.event.inputs.target_region }}" != "" ] && [ "${{ github.event.inputs.target_region }}" != "ALL" ]; then
+            echo "regions=[\"${{ github.event.inputs.target_region }}\"]" >> $GITHUB_OUTPUT
+          else
+            echo 'regions=["00_Ibb_Governorate_Full","U01_Ibb_City","U02_Al_Udayn_City","U03_Al_Qaidah_City","U04_Yarim_City","U05_Dhi_As_Sufal_City","U06_Al_Makhadir_City","U07_An_Nadirah_City","U08_As_Saddah_City","D01_Ibb","D02_Al_Dhihar","D03_Al_Mashannah","D04_Jiblah","D05_Badan","D06_As_Sabrah","D07_As_Sayyani","D08_Dhi_As_Sufal","D09_Mudhaykhirah","D10_Al_Udayn","D11_Far_Al_Udayn","D12_Hazm_Al_Udayn","D13_Hubaysh","D14_Al_Makhadir","D15_Al_Qafr","D16_Yarim","D17_Ar_Radmah","D18_As_Saddah","D19_An_Nadirah","D20_Ash_Shair"]' >> $GITHUB_OUTPUT
+          fi
+
+  download-export-and-publish:
+    needs: prepare-release-and-matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        region: ${{ fromJson(needs.prepare-release-and-matrix.outputs.regions) }}
+
+    steps:
+      - name: Free Up Runner Disk Space (Gain ~65 GB Free SSD)
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install requests Pillow tqdm numpy
+
+      - name: Download Previous State from Release (If Resuming)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REGION_CODE: ${{ matrix.region }}
+        run: |
+          mkdir -p ./workspace/exports ./workspace/tiles
+          gh release download v1.0-ibb-map -p "${REGION_CODE}_status.json" -D ./workspace/exports/ --clobber || true
+          gh release download v1.0-ibb-map -p "${REGION_CODE}_*.mbtiles*" -D ./workspace/exports/ --clobber || true
+          for p0 in ./workspace/exports/${REGION_CODE}_*.mbtiles.part_000; do
+            [ -e "$p0" ] || continue
+            base_mbt="${p0%.part_000}"
+            cat "${base_mbt}.part_"* > "$base_mbt"
+            rm -f "${base_mbt}.part_"*
+          done
+
+      - name: Run High-Speed Tile Downloader & GIS Exporter (Up to Z19)
+        env:
+          REGION_CODE: ${{ matrix.region }}
+          MAX_ZOOM: ${{ github.event.inputs.max_zoom || '19' }}
+        run: |
+          python scripts/ibb_z19_worker.py \
+            --region "$REGION_CODE" \
+            --max-zoom "$MAX_ZOOM" \
+            --work-dir "./workspace" \
+            --max-runtime-minutes 315
+
+      - name: Publish Full Files (or >1950MB Lossless Parts) to Permanent GitHub Release v1.0-ibb-map
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REGION_CODE: ${{ matrix.region }}
+        run: |
+          cd ./workspace/exports
+          MAX_ASSET_BYTES=2044723200 # 1950 MiB (تحت سقف 2.0 GB الصارم لـ GitHub Releases)
+          rm -f "${REGION_CODE}_SHA256SUMS.txt"
+
+          for f in *; do
+            [ -e "$f" ] || continue
+            [ "$f" != "${REGION_CODE}_SHA256SUMS.txt" ] || continue
+            FILE_SIZE=$(stat -c%s "$f")
+            sha256sum "$f" >> "${REGION_CODE}_SHA256SUMS.txt"
+
+            if [ "$FILE_SIZE" -le "$MAX_ASSET_BYTES" ]; then
+              echo "✅ Uploading full uncut file ($FILE_SIZE bytes): $f"
+              gh release upload v1.0-ibb-map "$f" --clobber
+            else
+              echo "📦 File $f ($FILE_SIZE bytes) exceeds GitHub 2GB single-asset cap. Splitting losslessly into 1950MB chunks..."
+              split -b 1950M -d -a 3 "$f" "${f}.part_"
+              rm -f "$f"
+              for part in "${f}.part_"*; do
+                echo "⬆️ Uploading part: $part"
+                gh release upload v1.0-ibb-map "$part" --clobber
+              done
+            fi
+          done
+
+          if [ -f "${REGION_CODE}_SHA256SUMS.txt" ]; then
+            gh release upload v1.0-ibb-map "${REGION_CODE}_SHA256SUMS.txt" --clobber
+          fi

@@ -1,2 +1,8 @@
-# ibb-map-gis-downloader
-خريطة محافظة إب الكاملة (Z12–Z19) — Google Hybrid &amp; White Roadmap Downloader &amp; Permanent Release Publisher
+# خريطة محافظة إب الكاملة (Z12–Z19) — Google Hybrid & White Roadmap
+
+نظام سحب وتصدير مستمر (24/7) عبر **GitHub Actions** لتحميل خريطة محافظة إب (اليمن) كاملة بجميع مديرياتها الـ 20 ومدنها الـ 8 من زوم 12 حتى زوم 19، مع الحفظ الدائم في GitHub Releases (`v1.0-ibb-map`).
+
+## المخرجات لكل منطقة
+- **الطبقة الهجينة (Hybrid)**: دمج صورة القمر الصناعي (`lyrs=s`) مع طبقة الأسماء والشوارع الشفافة بالعربية (`lyrs=h&hl=ar&gl=YE`) عبر `Image.alpha_composite`.
+- **الطبقة البيضاء للطباعة (White Roadmap)**: خريطة الطرق البيضاء والأسماء (`lyrs=m&hl=ar&gl=YE`).
+- **الصيغ المتوفرة**: `MBTiles`، `GeoTIFF + TFW + PRJ (WGS84)`، `KMZ`، `PNG`، وملف البصمة الرقمية `SHA256SUMS.txt`.

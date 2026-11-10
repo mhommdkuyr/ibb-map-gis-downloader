@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>عارض خريطة محافظة إب الكاملة (Z12–Z19) — Google Hybrid & White Roadmap</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root {
+      --bg-panel: #0f172a;
+      --bg-card: #1e293b;
+      --accent: #10b981;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--bg-panel);
+      color: var(--text-main);
+    }
+    #sidebar {
+      width: 370px;
+      background: var(--bg-panel);
+      border-left: 1px solid #334155;
+      display: flex;
+      flex-direction: column;
+      z-index: 1000;
+    }
+    .header {
+      padding: 16px;
+      border-bottom: 1px solid #334155;
+      background: #020617;
+    }
+    .header h1 {
+      font-size: 1.05rem;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+    .header p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    .controls {
+      padding: 12px 16px;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .controls label {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+    select, input, button {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid #475569;
+      background: var(--bg-card);
+      color: var(--text-main);
+      font-size: 0.88rem;
+    }
+    .btn-release {
+      display: inline-block;
+      text-align: center;
+      text-decoration: none;
+      background: var(--accent);
+      color: #022c22;
+      font-weight: 700;
+      padding: 9px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+    #region-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .region-card {
+      background: var(--bg-card);
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+    .region-card:hover, .region-card.active {
+      border-color: var(--accent);
+    }
+    .region-card .title {
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .region-card .meta {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .badge {
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #064e3b;
+      color: #6ee7b7;
+    }
+    #map {
+      flex: 1;
+      height: 100vh;
+    }
+    .status-bar {
+      padding: 8px 16px;
+      font-size: 0.78rem;
+      background: #020617;
+      border-top: 1px solid #334155;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <aside id="sidebar">
+    <div class="header">
+      <h1>🗺️ خريطة محافظة إب الكاملة (Z12–Z19)</h1>
+      <p>نظام الاستعراض التفاعلي والأوفلاين لـ 29 منطقة (صندوق المحافظة + 8 مدن رئيسية + 20 مديرية)</p>
+    </div>
+    <div class="controls">
+      <div>
+        <label for="layer-select">نوع الطبقة (Layer Mode):</label>
+        <select id="layer-select">
+          <option value="hybrid">الطبقة الهجينة (قمر صناعي + أسماء وشوارع عربية)</option>
+          <option value="roadmap">خريطة الطرق البيضاء للطباعة (White Roadmap)</option>
+          <option value="offline_hybrid">بلاطات محلية أوفلاين (Hybrid XYZ)</option>
+          <option value="offline_roadmap">بلاطات محلية أوفلاين (Roadmap XYZ)</option>
+        </select>
+      </div>
+      <div>
+        <input type="text" id="search-box" placeholder="ابحث عن مدينة أو مديرية..." />
+      </div>
+      <a class="btn-release" href="https://github.com/mhommdkuyr/ibb-map-gis-downloader/releases/tag/v1.0-ibb-map" target="_blank" rel="noopener">
+        📦 فتح مستودع التحميل الدائم (v1.0-ibb-map)
+      </a>
+    </div>
+    <div id="region-list"></div>
+    <div class="status-bar" id="coords-bar">الزوم الحالي: 12 | الإحداثيات: 13.9667, 44.1667</div>
+  </aside>
+  <main id="map"></main>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const REGIONS = [
+      { code: "00_Ibb_Governorate_Full", name_ar: "محافظة إب كاملة", name_en: "Ibb Governorate Full", tier: "governorate", center_lat: 13.9667, center_lon: 44.1667, north: 14.4500, south: 13.6500, east: 44.8500, west: 43.5500, zooms: "Z12–Z15" },
+      { code: "U01_Ibb_City", name_ar: "مدينة إب", name_en: "Ibb City", tier: "urban", center_lat: 13.9667, center_lon: 44.1833, north: 14.0150, south: 13.9250, east: 44.2150, west: 44.1400, zooms: "Z17–Z19" },
+      { code: "U02_Al_Udayn_City", name_ar: "مدينة العدين", name_en: "Al Udayn City", tier: "urban", center_lat: 13.9700, center_lon: 43.9900, north: 13.9920, south: 13.9480, east: 44.0150, west: 43.9650, zooms: "Z17–Z19" },
+      { code: "U03_Al_Qaidah_City", name_ar: "مدينة القاعدة", name_en: "Al Qaidah City", tier: "urban", center_lat: 13.7572, center_lon: 44.1388, north: 13.7820, south: 13.7320, east: 44.1620, west: 44.1150, zooms: "Z17–Z19" },
+      { code: "U04_Yarim_City", name_ar: "مدينة يريم", name_en: "Yarim City", tier: "urban", center_lat: 14.2965, center_lon: 44.3757, north: 14.3220, south: 14.2720, east: 44.4020, west: 44.3500, zooms: "Z17–Z19" },
+      { code: "U05_Dhi_As_Sufal_City", name_ar: "مدينة ذي السفال", name_en: "Dhi As Sufal City", tier: "urban", center_lat: 13.8355, center_lon: 44.1103, north: 13.8550, south: 13.8150, east: 44.1320, west: 44.0880, zooms: "Z17–Z19" },
+      { code: "U06_Al_Makhadir_City", name_ar: "مدينة المخادر", name_en: "Al Makhadir City", tier: "urban", center_lat: 14.1111, center_lon: 44.1993, north: 14.1320, south: 14.0900, east: 44.2200, west: 44.1780, zooms: "Z17–Z19" },
+      { code: "U07_An_Nadirah_City", name_ar: "مدينة النادرة", name_en: "An Nadirah City", tier: "urban", center_lat: 14.1015, center_lon: 44.4795, north: 14.1220, south: 14.0810, east: 44.5020, west: 44.4570, zooms: "Z17–Z19" },
+      { code: "U08_As_Saddah_City", name_ar: "مدينة السدة", name_en: "As Saddah City", tier: "urban", center_lat: 14.1661, center_lon: 44.3751, north: 14.1860, south: 14.1460, east: 44.3980, west: 44.3520, zooms: "Z17–Z19" },
+      { code: "D01_Ibb", name_ar: "مديرية إب (ريف إب)", name_en: "Ibb District", tier: "district", center_lat: 13.9667, center_lon: 44.1833, north: 14.0067, south: 13.9267, east: 44.2283, west: 44.1383, zooms: "Z15–Z19" },
+      { code: "D02_Al_Dhihar", name_ar: "مديرية الظهار", name_en: "Al Dhihar District", tier: "district", center_lat: 13.9789, center_lon: 44.1525, north: 14.0039, south: 13.9539, east: 44.1825, west: 44.1225, zooms: "Z15–Z19" },
+      { code: "D03_Al_Mashannah", name_ar: "مديرية المشنة", name_en: "Al Mashannah District", tier: "district", center_lat: 13.9571, center_lon: 44.1815, north: 13.9821, south: 13.9321, east: 44.2115, west: 44.1515, zooms: "Z15–Z19" },
+      { code: "D04_Jiblah", name_ar: "مديرية جبلة", name_en: "Jiblah District", tier: "district", center_lat: 13.9241, center_lon: 44.1459, north: 13.9591, south: 13.8891, east: 44.1859, west: 44.1059, zooms: "Z15–Z19" },
+      { code: "D05_Badan", name_ar: "مديرية بعدان", name_en: "Ba'dan District", tier: "district", center_lat: 13.9889, center_lon: 44.3231, north: 14.0339, south: 13.9439, east: 44.3731, west: 44.2731, zooms: "Z15–Z19" },
+      { code: "D06_As_Sabrah", name_ar: "مديرية السبرة", name_en: "As Sabrah District", tier: "district", center_lat: 13.9160, center_lon: 44.3240, north: 13.9610, south: 13.8710, east: 44.3740, west: 44.2740, zooms: "Z15–Z19" },
+      { code: "D07_As_Sayyani", name_ar: "مديرية السياني", name_en: "As Sayyani District", tier: "district", center_lat: 13.8139, center_lon: 44.1613, north: 13.8539, south: 13.7739, east: 44.2063, west: 44.1163, zooms: "Z15–Z19" },
+      { code: "D08_Dhi_As_Sufal", name_ar: "مديرية ذي السفال", name_en: "Dhi As Sufal District", tier: "district", center_lat: 13.8355, center_lon: 44.1103, north: 13.8805, south: 13.7905, east: 44.1603, west: 44.0603, zooms: "Z15–Z19" },
+      { code: "D09_Mudhaykhirah", name_ar: "مديرية مذيخرة", name_en: "Mudhaykhirah District", tier: "district", center_lat: 13.8661, center_lon: 43.9689, north: 13.9111, south: 13.8211, east: 44.0189, west: 43.9189, zooms: "Z15–Z19" },
+      { code: "D10_Al_Udayn", name_ar: "مديرية العدين", name_en: "Al Udayn District", tier: "district", center_lat: 13.9700, center_lon: 43.9900, north: 14.0250, south: 13.9150, east: 44.0500, west: 43.9300, zooms: "Z15–Z19" },
+      { code: "D11_Far_Al_Udayn", name_ar: "مديرية فرع العدين", name_en: "Far Al Udayn District", tier: "district", center_lat: 13.8997, center_lon: 43.8081, north: 13.9597, south: 13.8397, east: 43.8731, west: 43.7431, zooms: "Z15–Z19" },
+      { code: "D12_Hazm_Al_Udayn", name_ar: "مديرية حزم العدين", name_en: "Hazm Al Udayn District", tier: "district", center_lat: 14.1146, center_lon: 43.9045, north: 14.1696, south: 14.0596, east: 43.9645, west: 43.8445, zooms: "Z15–Z19" },
+      { code: "D13_Hubaysh", name_ar: "مديرية حبيش", name_en: "Hubaysh District", tier: "district", center_lat: 14.1161, center_lon: 44.0819, north: 14.1611, south: 14.0711, east: 44.1319, west: 44.0319, zooms: "Z15–Z19" },
+      { code: "D14_Al_Makhadir", name_ar: "مديرية المخادر", name_en: "Al Makhadir District", tier: "district", center_lat: 14.1111, center_lon: 44.1993, north: 14.1561, south: 14.0661, east: 44.2493, west: 44.1493, zooms: "Z15–Z19" },
+      { code: "D15_Al_Qafr", name_ar: "مديرية القفر", name_en: "Al Qafr District", tier: "district", center_lat: 14.2500, center_lon: 44.0800, north: 14.3200, south: 14.1800, east: 44.1600, west: 44.0000, zooms: "Z15–Z19" },
+      { code: "D16_Yarim", name_ar: "مديرية يريم", name_en: "Yarim District", tier: "district", center_lat: 14.2965, center_lon: 44.3757, north: 14.3615, south: 14.2315, east: 44.4457, west: 44.3057, zooms: "Z15–Z19" },
+      { code: "D17_Ar_Radmah", name_ar: "مديرية الرضمة", name_en: "Ar Radmah District", tier: "district", center_lat: 14.2000, center_lon: 44.5900, north: 14.2550, south: 14.1450, east: 44.6500, west: 44.5300, zooms: "Z15–Z19" },
+      { code: "D18_As_Saddah", name_ar: "مديرية السدة", name_en: "As Saddah District", tier: "district", center_lat: 14.1661, center_lon: 44.3751, north: 14.2111, south: 14.1211, east: 44.4251, west: 44.3251, zooms: "Z15–Z19" },
+      { code: "D19_An_Nadirah", name_ar: "مديرية النادرة", name_en: "An Nadirah District", tier: "district", center_lat: 14.1015, center_lon: 44.4795, north: 14.1515, south: 14.0515, east: 44.5345, west: 44.4245, zooms: "Z15–Z19" },
+      { code: "D20_Ash_Shair", name_ar: "مديرية الشعر", name_en: "Ash Sha'ir District", tier: "district", center_lat: 14.0139, center_lon: 44.3965, north: 14.0539, south: 13.9739, east: 44.4415, west: 44.3515, zooms: "Z15–Z19" }
+    ];
+    const mapOpts = { center: [13.9667, 44.1667], zoom: 12, maxZoom: 19, minZoom: 8 };
+    const map = L.map('map', mapOpts);
+    const tileOpts = { subdomains: ['0','1','2','3'], maxZoom: 19 };
+    const localOpts = { maxZoom: 19 };
+    const layers = {
+      hybrid: L.layerGroup([
+        L.tileLayer('https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', tileOpts),
+        L.tileLayer('https://mt{s}.google.com/vt/lyrs=h&hl=ar&gl=YE&x={x}&y={y}&z={z}', tileOpts)
+      ]),
+      roadmap: L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&hl=ar&gl=YE&x={x}&y={y}&z={z}', tileOpts),
+      offline_hybrid: L.tileLayer('./workspace/tiles/hybrid/{z}/{x}/{y}.png', localOpts),
+      offline_roadmap: L.tileLayer('./workspace/tiles/roadmap/{z}/{x}/{y}.png', localOpts)
+    };
+    let currentLayer = layers.hybrid.addTo(map);
+    const bboxesLayer = L.layerGroup().addTo(map);
+    document.getElementById('layer-select').addEventListener('change', (e) => {
+      map.removeLayer(currentLayer);
+      currentLayer = layers[e.target.value];
+      currentLayer.addTo(map);
+    });
+    function renderRegions(filterText = '') {
+      const listEl = document.getElementById('region-list');
+      listEl.innerHTML = '';
+      bboxesLayer.clearLayers();
+      REGIONS.filter(r => r.name_ar.includes(filterText) || r.name_en.toLowerCase().includes(filterText.toLowerCase()) || r.code.toLowerCase().includes(filterText.toLowerCase()))
+        .forEach(reg => {
+          const bounds = [[reg.south, reg.west], [reg.north, reg.east]];
+          const rectStyle = {
+            color: reg.tier === 'governorate' ? '#f59e0b' : (reg.tier === 'urban' ? '#10b981' : '#38bdf8'),
+            weight: reg.tier === 'governorate' ? 2 : 1.3,
+            fillOpacity: 0.05
+          };
+          const rect = L.rectangle(bounds, rectStyle).bindPopup(`<b>${reg.name_ar}</b><br>${reg.name_en}<br>Code: <code>${reg.code}</code><br>Zooms: ${reg.zooms}`);
+          rect.addTo(bboxesLayer);
+          const card = document.createElement('div');
+          card.className = 'region-card';
+          card.innerHTML = `
+            <div class="title">
+              <span>${reg.name_ar}</span>
+              <span class="badge">${reg.zooms}</span>
+            </div>
+            <div class="meta">${reg.code} — ${reg.name_en}</div>
+          `;
+          card.addEventListener('click', () => {
+            document.querySelectorAll('.region-card').forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            const padOpts = { padding: [20, 20] };
+            map.fitBounds(bounds, padOpts);
+            rect.openPopup();
+          });
+          listEl.appendChild(card);
+        });
+    }
+    document.getElementById('search-box').addEventListener('input', (e) => renderRegions(e.target.value));
+    map.on('moveend zoomend', () => {
+      const c = map.getCenter();
+      document.getElementById('coords-bar').textContent = `الزوم الحالي: ${map.getZoom()} | الإحداثيات: ${c.lat.toFixed(4)}, ${c.lng.toFixed(4)}`;
+    });
+    renderRegions();
+  </script>
+</body>
+</html>
