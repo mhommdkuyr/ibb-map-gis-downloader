@@ -2,81 +2,283 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>عارض خريطة محافظة إب الكاملة (Z12–Z19) — Google Hybrid & White Roadmap</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>خريطة محافظة إب التفاعلية الشاملة (Z12–Z19) — Google Hybrid & White Roadmap</title>
+
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
   <style>
     :root {
-      --bg-panel: #0f172a;
+      --primary: #10b981;
+      --primary-dark: #059669;
+      --bg-dark: #0f172a;
+      --bg-panel: rgba(15, 23, 42, 0.94);
       --bg-card: #1e293b;
-      --accent: #10b981;
-      --text-main: #f8fafc;
+      --border: #334155;
+      --text: #f8fafc;
       --text-muted: #94a3b8;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      display: flex;
+      font-family: 'Segoe UI', Tahoma, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
       height: 100vh;
+      width: 100vw;
       overflow: hidden;
-      background: var(--bg-panel);
-      color: var(--text-main);
+      background: var(--bg-dark);
+      color: var(--text);
     }
-    #sidebar {
-      width: 370px;
-      background: var(--bg-panel);
-      border-left: 1px solid #334155;
-      display: flex;
-      flex-direction: column;
+
+    #map {
+      height: 100vh;
+      width: 100vw;
+      z-index: 1;
+    }
+
+    /* Floating Header / Search Bar (Google Maps style) */
+    .top-bar {
+      position: absolute;
+      top: 14px;
+      right: 14px;
       z-index: 1000;
-    }
-    .header {
-      padding: 16px;
-      border-bottom: 1px solid #334155;
-      background: #020617;
-    }
-    .header h1 {
-      font-size: 1.05rem;
-      color: var(--accent);
-      margin-bottom: 6px;
-    }
-    .header p {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      line-height: 1.4;
-    }
-    .controls {
-      padding: 12px 16px;
-      border-bottom: 1px solid #334155;
       display: flex;
       flex-direction: column;
+      gap: 8px;
+      width: 380px;
+      max-width: calc(100vw - 28px);
+    }
+
+    .search-card {
+      background: var(--bg-panel);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 6px 12px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
       gap: 10px;
     }
-    .controls label {
-      font-size: 0.82rem;
+
+    .search-card input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 0.92rem;
+      padding: 8px 4px;
+    }
+
+    .search-card input::placeholder {
       color: var(--text-muted);
     }
-    select, input, button {
-      width: 100%;
-      padding: 8px 10px;
-      border-radius: 6px;
-      border: 1px solid #475569;
-      background: var(--bg-card);
-      color: var(--text-main);
-      font-size: 0.88rem;
+
+    .btn-icon {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 8px;
+      transition: all 0.2s;
     }
-    .btn-release {
-      display: inline-block;
-      text-align: center;
-      text-decoration: none;
-      background: var(--accent);
-      color: #022c22;
-      font-weight: 700;
-      padding: 9px 12px;
-      border-radius: 6px;
+
+    .btn-icon:hover {
+      color: var(--primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Floating Layer Switcher Buttons (Bottom Left like Google Maps) */
+    .layer-switcher {
+      position: absolute;
+      bottom: 30px;
+      left: 14px;
+      z-index: 1000;
+      display: flex;
+      gap: 8px;
+      background: var(--bg-panel);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 6px;
+      box-shadow: var(--shadow);
+    }
+
+    .layer-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 8px 14px;
+      border-radius: 8px;
       font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
     }
-    #region-list {
+
+    .layer-btn:hover {
+      color: var(--text);
+      background: var(--bg-card);
+    }
+
+    .layer-btn.active {
+      background: var(--primary);
+      color: #022c22;
+      border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+    }
+
+    /* Floating Quick Tools (Zoom 19, GPS, Fullscreen) */
+    .quick-tools {
+      position: absolute;
+      bottom: 30px;
+      right: 14px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .tool-btn {
+      width: 44px;
+      height: 44px;
+      background: var(--bg-panel);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      font-size: 1.05rem;
+      transition: all 0.2s;
+    }
+
+    .tool-btn:hover {
+      background: var(--primary);
+      color: #022c22;
+      border-color: var(--primary);
+    }
+
+    .tool-btn.z19-btn {
+      background: #f59e0b;
+      color: #78350f;
+      font-weight: 800;
+      font-size: 0.85rem;
+      border-color: #f59e0b;
+    }
+
+    .tool-btn.z19-btn:hover {
+      background: #d97706;
+      color: #fff;
+    }
+
+    /* Bottom Info Status Bar */
+    .status-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 999;
+      background: rgba(2, 6, 23, 0.88);
+      backdrop-filter: blur(8px);
+      border-top: 1px solid var(--border);
+      padding: 4px 16px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .status-bar span {
+      pointer-events: auto;
+    }
+
+    /* Collapsible Sidebar (29 Districts & Cities Drawer) */
+    .sidebar {
+      position: absolute;
+      top: 0;
+      right: -390px;
+      width: 380px;
+      max-width: 88vw;
+      height: 100vh;
+      background: var(--bg-panel);
+      backdrop-filter: blur(16px);
+      border-left: 1px solid var(--border);
+      z-index: 1050;
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .sidebar.open {
+      right: 0;
+    }
+
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #020617;
+    }
+
+    .sidebar-header h2 {
+      font-size: 1.05rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: rgba(30, 41, 59, 0.5);
+    }
+
+    .sidebar-tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .sidebar-tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      background: rgba(16, 185, 129, 0.08);
+    }
+
+    .region-list {
       flex: 1;
       overflow-y: auto;
       padding: 12px;
@@ -84,167 +286,592 @@
       flex-direction: column;
       gap: 8px;
     }
+
     .region-card {
       background: var(--bg-card);
-      border: 1px solid #334155;
-      border-radius: 8px;
-      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
       cursor: pointer;
-      transition: border-color 0.15s, transform 0.15s;
-    }
-    .region-card:hover, .region-card.active {
-      border-color: var(--accent);
-    }
-    .region-card .title {
-      font-weight: 700;
-      font-size: 0.9rem;
+      transition: all 0.18s;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .region-card .meta {
+
+    .region-card:hover {
+      border-color: var(--primary);
+      transform: translateX(-3px);
+      background: #273549;
+    }
+
+    .region-info h4 {
+      font-size: 0.92rem;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+
+    .region-info p {
       font-size: 0.76rem;
       color: var(--text-muted);
-      margin-top: 4px;
     }
-    .badge {
-      font-size: 0.7rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: #064e3b;
+
+    .zoom-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(16, 185, 129, 0.15);
       color: #6ee7b7;
+      border: 1px solid rgba(16, 185, 129, 0.3);
     }
-    #map {
-      flex: 1;
-      height: 100vh;
+
+    .zoom-badge.urban {
+      background: rgba(56, 189, 248, 0.15);
+      color: #7dd3fc;
+      border-color: rgba(56, 189, 248, 0.3);
     }
-    .status-bar {
-      padding: 8px 16px;
+
+    .zoom-badge.full {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fcd34d;
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    /* Google Maps Styled Popups */
+    .leaflet-popup-content-wrapper {
+      background: var(--bg-panel);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      direction: rtl;
+      padding: 4px;
+    }
+
+    .leaflet-popup-tip {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+    }
+
+    .popup-box {
+      padding: 8px 6px;
+    }
+
+    .popup-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .popup-address {
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: #e2e8f0;
+      margin-bottom: 8px;
+      background: rgba(30, 41, 59, 0.6);
+      padding: 6px 10px;
+      border-radius: 6px;
+      border-right: 3px solid var(--primary);
+    }
+
+    .popup-coords {
       font-size: 0.78rem;
-      background: #020617;
-      border-top: 1px solid #334155;
       color: var(--text-muted);
+      font-family: monospace;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #020617;
+      padding: 5px 8px;
+      border-radius: 6px;
+    }
+
+    .popup-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .popup-btn {
+      flex: 1;
+      padding: 6px 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-copy {
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-copy:hover {
+      background: var(--primary);
+      color: #022c22;
+    }
+
+    .btn-gmaps {
+      background: #2563eb;
+      color: #fff;
+    }
+
+    .btn-gmaps:hover {
+      background: #1d4ed8;
+    }
+
+    /* Mobile Adaptations */
+    @media (max-width: 640px) {
+      .top-bar {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+      }
+      .layer-switcher {
+        bottom: 24px;
+        left: 10px;
+        gap: 4px;
+        padding: 4px;
+      }
+      .layer-btn {
+        padding: 6px 10px;
+        font-size: 0.78rem;
+      }
+      .quick-tools {
+        bottom: 24px;
+        right: 10px;
+      }
+      .tool-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 0.95rem;
+      }
     }
   </style>
 </head>
 <body>
-  <aside id="sidebar">
-    <div class="header">
-      <h1>🗺️ خريطة محافظة إب الكاملة (Z12–Z19)</h1>
-      <p>نظام الاستعراض التفاعلي والأوفلاين لـ 29 منطقة (صندوق المحافظة + 8 مدن رئيسية + 20 مديرية)</p>
+
+  <!-- Map Container -->
+  <div id="map"></div>
+
+  <!-- Floating Top Bar (Google Maps Style) -->
+  <div class="top-bar">
+    <div class="search-card">
+      <button class="btn-icon" id="btn-toggle-sidebar" title="فتح قائمة المديريات والمدن الـ 29">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <input type="text" id="search-input" placeholder="ابحث عن مديرية أو مدينة أو موقع في إب..." />
+      <button class="btn-icon" id="btn-search-exec" title="بحث">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </button>
+      <button class="btn-icon" id="btn-reset-view" title="إعادة التمركز على المحافظة كاملة">
+        <i class="fa-solid fa-compass"></i>
+      </button>
     </div>
-    <div class="controls">
-      <div>
-        <label for="layer-select">نوع الطبقة (Layer Mode):</label>
-        <select id="layer-select">
-          <option value="hybrid">الطبقة الهجينة (قمر صناعي + أسماء وشوارع عربية)</option>
-          <option value="roadmap">خريطة الطرق البيضاء للطباعة (White Roadmap)</option>
-          <option value="offline_hybrid">بلاطات محلية أوفلاين (Hybrid XYZ)</option>
-          <option value="offline_roadmap">بلاطات محلية أوفلاين (Roadmap XYZ)</option>
-        </select>
-      </div>
-      <div>
-        <input type="text" id="search-box" placeholder="ابحث عن مدينة أو مديرية..." />
-      </div>
-      <a class="btn-release" href="https://github.com/mhommdkuyr/ibb-map-gis-downloader/releases/tag/v1.0-ibb-map" target="_blank" rel="noopener">
-        📦 فتح مستودع التحميل الدائم (v1.0-ibb-map)
-      </a>
+  </div>
+
+  <!-- Floating Layer Switcher (Bottom Left) -->
+  <div class="layer-switcher">
+    <button class="layer-btn active" data-layer="hybrid">
+      <i class="fa-solid fa-satellite"></i>
+      <span>أقمار صناعية هجينة</span>
+    </button>
+    <button class="layer-btn" data-layer="roadmap">
+      <i class="fa-solid fa-map"></i>
+      <span>خريطة بيضاء</span>
+    </button>
+    <button class="layer-btn" data-layer="terrain">
+      <i class="fa-solid fa-mountain-sun"></i>
+      <span>تضاريس</span>
+    </button>
+  </div>
+
+  <!-- Quick Floating Action Tools (Bottom Right) -->
+  <div class="quick-tools">
+    <button class="tool-btn z19-btn" id="btn-zoom-19" title="انتقال فوري إلى أقصى دقة (زوم 19) في هذا الموقع">
+      Z19
+    </button>
+    <button class="tool-btn" id="btn-locate" title="تحديد موقعي الحالي عبر GPS">
+      <i class="fa-solid fa-location-crosshairs"></i>
+    </button>
+    <button class="tool-btn" id="btn-toggle-bboxes" title="إظهار / إخفاء حدود الـ 29 مديرية ومدينة">
+      <i class="fa-solid fa-vector-square"></i>
+    </button>
+    <button class="tool-btn" id="btn-fullscreen" title="ملء الشاشة">
+      <i class="fa-solid fa-expand"></i>
+    </button>
+  </div>
+
+  <!-- Status Bar (Coordinates & Zoom at bottom) -->
+  <div class="status-bar">
+    <span id="coords-display">
+      <i class="fa-solid fa-location-dot" style="color: var(--primary); margin-left: 4px;"></i>
+      خط العرض: 13.9667° | خط الطول: 44.1667°
+    </span>
+    <span id="zoom-display">
+      مستوى الزوم: <strong>12</strong> (أقصى دقة: 19)
+    </span>
+  </div>
+
+  <!-- Collapsible 29-Region Drawer (Sidebar) -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2><i class="fa-solid fa-layer-group"></i> قطاعات محافظة إب (29 قطاعاً)</h2>
+      <button class="btn-icon" id="btn-close-sidebar"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div id="region-list"></div>
-    <div class="status-bar" id="coords-bar">الزوم الحالي: 12 | الإحداثيات: 13.9667, 44.1667</div>
+    <div class="sidebar-tabs">
+      <button class="sidebar-tab active" data-filter="all">الكل (29)</button>
+      <button class="sidebar-tab" data-filter="urban">المدن الـ 8</button>
+      <button class="sidebar-tab" data-filter="district">المديريات الـ 20</button>
+    </div>
+    <div class="region-list" id="region-list"></div>
   </aside>
-  <main id="map"></main>
+
+  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <script>
+    // 29 Region Geodata (Full governorate + 8 urban centers + 20 districts)
     const REGIONS = [
-      { code: "00_Ibb_Governorate_Full", name_ar: "محافظة إب كاملة", name_en: "Ibb Governorate Full", tier: "governorate", center_lat: 13.9667, center_lon: 44.1667, north: 14.4500, south: 13.6500, east: 44.8500, west: 43.5500, zooms: "Z12–Z15" },
-      { code: "U01_Ibb_City", name_ar: "مدينة إب", name_en: "Ibb City", tier: "urban", center_lat: 13.9667, center_lon: 44.1833, north: 14.0150, south: 13.9250, east: 44.2150, west: 44.1400, zooms: "Z17–Z19" },
-      { code: "U02_Al_Udayn_City", name_ar: "مدينة العدين", name_en: "Al Udayn City", tier: "urban", center_lat: 13.9700, center_lon: 43.9900, north: 13.9920, south: 13.9480, east: 44.0150, west: 43.9650, zooms: "Z17–Z19" },
-      { code: "U03_Al_Qaidah_City", name_ar: "مدينة القاعدة", name_en: "Al Qaidah City", tier: "urban", center_lat: 13.7572, center_lon: 44.1388, north: 13.7820, south: 13.7320, east: 44.1620, west: 44.1150, zooms: "Z17–Z19" },
-      { code: "U04_Yarim_City", name_ar: "مدينة يريم", name_en: "Yarim City", tier: "urban", center_lat: 14.2965, center_lon: 44.3757, north: 14.3220, south: 14.2720, east: 44.4020, west: 44.3500, zooms: "Z17–Z19" },
-      { code: "U05_Dhi_As_Sufal_City", name_ar: "مدينة ذي السفال", name_en: "Dhi As Sufal City", tier: "urban", center_lat: 13.8355, center_lon: 44.1103, north: 13.8550, south: 13.8150, east: 44.1320, west: 44.0880, zooms: "Z17–Z19" },
-      { code: "U06_Al_Makhadir_City", name_ar: "مدينة المخادر", name_en: "Al Makhadir City", tier: "urban", center_lat: 14.1111, center_lon: 44.1993, north: 14.1320, south: 14.0900, east: 44.2200, west: 44.1780, zooms: "Z17–Z19" },
-      { code: "U07_An_Nadirah_City", name_ar: "مدينة النادرة", name_en: "An Nadirah City", tier: "urban", center_lat: 14.1015, center_lon: 44.4795, north: 14.1220, south: 14.0810, east: 44.5020, west: 44.4570, zooms: "Z17–Z19" },
-      { code: "U08_As_Saddah_City", name_ar: "مدينة السدة", name_en: "As Saddah City", tier: "urban", center_lat: 14.1661, center_lon: 44.3751, north: 14.1860, south: 14.1460, east: 44.3980, west: 44.3520, zooms: "Z17–Z19" },
-      { code: "D01_Ibb", name_ar: "مديرية إب (ريف إب)", name_en: "Ibb District", tier: "district", center_lat: 13.9667, center_lon: 44.1833, north: 14.0067, south: 13.9267, east: 44.2283, west: 44.1383, zooms: "Z15–Z19" },
-      { code: "D02_Al_Dhihar", name_ar: "مديرية الظهار", name_en: "Al Dhihar District", tier: "district", center_lat: 13.9789, center_lon: 44.1525, north: 14.0039, south: 13.9539, east: 44.1825, west: 44.1225, zooms: "Z15–Z19" },
-      { code: "D03_Al_Mashannah", name_ar: "مديرية المشنة", name_en: "Al Mashannah District", tier: "district", center_lat: 13.9571, center_lon: 44.1815, north: 13.9821, south: 13.9321, east: 44.2115, west: 44.1515, zooms: "Z15–Z19" },
-      { code: "D04_Jiblah", name_ar: "مديرية جبلة", name_en: "Jiblah District", tier: "district", center_lat: 13.9241, center_lon: 44.1459, north: 13.9591, south: 13.8891, east: 44.1859, west: 44.1059, zooms: "Z15–Z19" },
-      { code: "D05_Badan", name_ar: "مديرية بعدان", name_en: "Ba'dan District", tier: "district", center_lat: 13.9889, center_lon: 44.3231, north: 14.0339, south: 13.9439, east: 44.3731, west: 44.2731, zooms: "Z15–Z19" },
-      { code: "D06_As_Sabrah", name_ar: "مديرية السبرة", name_en: "As Sabrah District", tier: "district", center_lat: 13.9160, center_lon: 44.3240, north: 13.9610, south: 13.8710, east: 44.3740, west: 44.2740, zooms: "Z15–Z19" },
-      { code: "D07_As_Sayyani", name_ar: "مديرية السياني", name_en: "As Sayyani District", tier: "district", center_lat: 13.8139, center_lon: 44.1613, north: 13.8539, south: 13.7739, east: 44.2063, west: 44.1163, zooms: "Z15–Z19" },
-      { code: "D08_Dhi_As_Sufal", name_ar: "مديرية ذي السفال", name_en: "Dhi As Sufal District", tier: "district", center_lat: 13.8355, center_lon: 44.1103, north: 13.8805, south: 13.7905, east: 44.1603, west: 44.0603, zooms: "Z15–Z19" },
-      { code: "D09_Mudhaykhirah", name_ar: "مديرية مذيخرة", name_en: "Mudhaykhirah District", tier: "district", center_lat: 13.8661, center_lon: 43.9689, north: 13.9111, south: 13.8211, east: 44.0189, west: 43.9189, zooms: "Z15–Z19" },
-      { code: "D10_Al_Udayn", name_ar: "مديرية العدين", name_en: "Al Udayn District", tier: "district", center_lat: 13.9700, center_lon: 43.9900, north: 14.0250, south: 13.9150, east: 44.0500, west: 43.9300, zooms: "Z15–Z19" },
-      { code: "D11_Far_Al_Udayn", name_ar: "مديرية فرع العدين", name_en: "Far Al Udayn District", tier: "district", center_lat: 13.8997, center_lon: 43.8081, north: 13.9597, south: 13.8397, east: 43.8731, west: 43.7431, zooms: "Z15–Z19" },
-      { code: "D12_Hazm_Al_Udayn", name_ar: "مديرية حزم العدين", name_en: "Hazm Al Udayn District", tier: "district", center_lat: 14.1146, center_lon: 43.9045, north: 14.1696, south: 14.0596, east: 43.9645, west: 43.8445, zooms: "Z15–Z19" },
-      { code: "D13_Hubaysh", name_ar: "مديرية حبيش", name_en: "Hubaysh District", tier: "district", center_lat: 14.1161, center_lon: 44.0819, north: 14.1611, south: 14.0711, east: 44.1319, west: 44.0319, zooms: "Z15–Z19" },
-      { code: "D14_Al_Makhadir", name_ar: "مديرية المخادر", name_en: "Al Makhadir District", tier: "district", center_lat: 14.1111, center_lon: 44.1993, north: 14.1561, south: 14.0661, east: 44.2493, west: 44.1493, zooms: "Z15–Z19" },
-      { code: "D15_Al_Qafr", name_ar: "مديرية القفر", name_en: "Al Qafr District", tier: "district", center_lat: 14.2500, center_lon: 44.0800, north: 14.3200, south: 14.1800, east: 44.1600, west: 44.0000, zooms: "Z15–Z19" },
-      { code: "D16_Yarim", name_ar: "مديرية يريم", name_en: "Yarim District", tier: "district", center_lat: 14.2965, center_lon: 44.3757, north: 14.3615, south: 14.2315, east: 44.4457, west: 44.3057, zooms: "Z15–Z19" },
-      { code: "D17_Ar_Radmah", name_ar: "مديرية الرضمة", name_en: "Ar Radmah District", tier: "district", center_lat: 14.2000, center_lon: 44.5900, north: 14.2550, south: 14.1450, east: 44.6500, west: 44.5300, zooms: "Z15–Z19" },
-      { code: "D18_As_Saddah", name_ar: "مديرية السدة", name_en: "As Saddah District", tier: "district", center_lat: 14.1661, center_lon: 44.3751, north: 14.2111, south: 14.1211, east: 44.4251, west: 44.3251, zooms: "Z15–Z19" },
-      { code: "D19_An_Nadirah", name_ar: "مديرية النادرة", name_en: "An Nadirah District", tier: "district", center_lat: 14.1015, center_lon: 44.4795, north: 14.1515, south: 14.0515, east: 44.5345, west: 44.4245, zooms: "Z15–Z19" },
-      { code: "D20_Ash_Shair", name_ar: "مديرية الشعر", name_en: "Ash Sha'ir District", tier: "district", center_lat: 14.0139, center_lon: 44.3965, north: 14.0539, south: 13.9739, east: 44.4415, west: 44.3515, zooms: "Z15–Z19" }
+      { code: "00_Ibb_Governorate_Full", name_ar: "محافظة إب كاملة", name_en: "Ibb Governorate Full", tier: "governorate", center_lat: 13.9667, center_lon: 44.1667, north: 14.4500, south: 13.6500, east: 44.8500, west: 43.5500, zooms: "Z12–Z15", targetZoom: 12 },
+      { code: "U01_Ibb_City", name_ar: "مدينة إب", name_en: "Ibb City", tier: "urban", center_lat: 13.9667, center_lon: 44.1833, north: 14.0150, south: 13.9250, east: 44.2150, west: 44.1400, zooms: "Z17–Z19", targetZoom: 18 },
+      { code: "U02_Al_Udayn_City", name_ar: "مدينة العدين", name_en: "Al Udayn City", tier: "urban", center_lat: 13.9700, center_lon: 43.9900, north: 13.9920, south: 13.9480, east: 44.0150, west: 43.9650, zooms: "Z17–Z19", targetZoom: 18 },
+      { code: "U03_Al_Qaidah_City", name_ar: "مدينة القاعدة", name_en: "Al Qaidah City", tier: "urban", center_lat: 13.7572, center_lon: 44.1388, north: 13.7820, south: 13.7320, east: 44.1620, west: 44.1150, zooms: "Z17–Z19", targetZoom: 18 },
+      { code: "U04_Yarim_City", name_ar: "مدينة يريم", name_en: "Yarim City", tier: "urban", center_lat: 14.2965, center_lon: 44.3757, north: 14.3220, south: 14.2720, east: 44.4020, west: 44.3500, zooms: "Z17–Z19", targetZoom: 18 },
+      { code: "U05_Dhi_As_Sufal_City", name_ar: "مدينة ذي السفال", name_en: "Dhi As Sufal City", tier: "urban", center_lat: 13.8355, center_lon: 44.1103, north: 13.8550, south: 13.8150, east: 44.1320, west: 44.0880, zooms: "Z17–Z19", targetZoom: 18 },
+      { code: "U06_Al_Makhadir_City", name_ar: "مدينة المخادر", name_en: "Al Makhadir City", tier: "urban", center_lat: 14.1111, center_lon: 44.1993, north: 14.1320, south: 14.0900, east: 44.2200, west: 44.1780, zooms: "Z17–Z19", targetZoom: 18 },
+      { code: "U07_An_Nadirah_City", name_ar: "مدينة النادرة", name_en: "An Nadirah City", tier: "urban", center_lat: 14.1015, center_lon: 44.4795, north: 14.1220, south: 14.0810, east: 44.5020, west: 44.4570, zooms: "Z17–Z19", targetZoom: 18 },
+      { code: "U08_As_Saddah_City", name_ar: "مدينة السدة", name_en: "As Saddah City", tier: "urban", center_lat: 14.1661, center_lon: 44.3751, north: 14.1860, south: 14.1460, east: 44.3980, west: 44.3520, zooms: "Z17–Z19", targetZoom: 18 },
+      { code: "D01_Ibb", name_ar: "مديرية إب (ريف إب)", name_en: "Ibb District", tier: "district", center_lat: 13.9667, center_lon: 44.1833, north: 14.0067, south: 13.9267, east: 44.2283, west: 44.1383, zooms: "Z15–Z19", targetZoom: 16 },
+      { code: "D02_Al_Dhihar", name_ar: "مديرية الظهار", name_en: "Al Dhihar District", tier: "district", center_lat: 13.9789, center_lon: 44.1525, north: 14.0039, south: 13.9539, east: 44.1825, west: 44.1225, zooms: "Z15–Z19", targetZoom: 16 },
+      { code: "D03_Al_Mashannah", name_ar: "مديرية المشنة", name_en: "Al Mashannah District", tier: "district", center_lat: 13.9571, center_lon: 44.1815, north: 13.9821, south: 13.9321, east: 44.2115, west: 44.1515, zooms: "Z15–Z19", targetZoom: 16 },
+      { code: "D04_Jiblah", name_ar: "مديرية جبلة", name_en: "Jiblah District", tier: "district", center_lat: 13.9241, center_lon: 44.1459, north: 13.9591, south: 13.8891, east: 44.1859, west: 44.1059, zooms: "Z15–Z19", targetZoom: 16 },
+      { code: "D05_Badan", name_ar: "مديرية بعدان", name_en: "Ba'dan District", tier: "district", center_lat: 13.9889, center_lon: 44.3231, north: 14.0339, south: 13.9439, east: 44.3731, west: 44.2731, zooms: "Z15–Z19", targetZoom: 16 },
+      { code: "D06_As_Sabrah", name_ar: "مديرية السبرة", name_en: "As Sabrah District", tier: "district", center_lat: 13.9160, center_lon: 44.3240, north: 13.9610, south: 13.8710, east: 44.3740, west: 44.2740, zooms: "Z15–Z19", targetZoom: 16 },
+      { code: "D07_As_Sayyani", name_ar: "مديرية السياني", name_en: "As Sayyani District", tier: "district", center_lat: 13.8139, center_lon: 44.1613, north: 13.8539, south: 13.7739, east: 44.2063, west: 44.1163, zooms: "Z15–Z19", targetZoom: 16 },
+      { code: "D08_Dhi_As_Sufal", name_ar: "مديرية ذي السفال", name_en: "Dhi As Sufal District", tier: "district", center_lat: 13.8355, center_lon: 44.1103, north: 13.8805, south: 13.7905, east: 44.1603, west: 44.0603, zooms: "Z15–Z19", targetZoom: 16 },
+      { code: "D09_Mudhaykhirah", name_ar: "مديرية مذيخرة", name_en: "Mudhaykhirah District", tier: "district", center_lat: 13.8661, center_lon: 43.9689, north: 13.9111, south: 13.8211, east: 44.0189, west: 43.9189, zooms: "Z15–Z19", targetZoom: 16 },
+      { code: "D10_Al_Udayn", name_ar: "مديرية العدين", name_en: "Al Udayn District", tier: "district", center_lat: 13.9700, center_lon: 43.9900, north: 14.0250, south: 13.9150, east: 44.0500, west: 43.9300, zooms: "Z15–Z19", targetZoom: 16 },
+      { code: "D11_Far_Al_Udayn", name_ar: "مديرية فرع العدين", name_en: "Far Al Udayn District", tier: "district", center_lat: 13.8997, center_lon: 43.8081, north: 13.9597, south: 13.8397, east: 43.8731, west: 43.7431, zooms: "Z15–Z19", targetZoom: 16 },
+      { code: "D12_Hazm_Al_Udayn", name_ar: "مديرية حزم العدين", name_en: "Hazm Al Udayn District", tier: "district", center_lat: 14.1146, center_lon: 43.9045, north: 14.1696, south: 14.0596, east: 43.9645, west: 43.8445, zooms: "Z15–Z19", targetZoom: 16 },
+      { code: "D13_Hubaysh", name_ar: "مديرية حبيش", name_en: "Hubaysh District", tier: "district", center_lat: 14.1161, center_lon: 44.0819, north: 14.1611, south: 14.0711, east: 44.1319, west: 44.0319, zooms: "Z15–Z19", targetZoom: 16 },
+      { code: "D14_Al_Makhadir", name_ar: "مديرية المخادر", name_en: "Al Makhadir District", tier: "district", center_lat: 14.1111, center_lon: 44.1993, north: 14.1561, south: 14.0661, east: 44.2493, west: 44.1493, zooms: "Z15–Z19", targetZoom: 16 },
+      { code: "D15_Al_Qafr", name_ar: "مديرية القفر", name_en: "Al Qafr District", tier: "district", center_lat: 14.2500, center_lon: 44.0800, north: 14.3200, south: 14.1800, east: 44.1600, west: 44.0000, zooms: "Z15–Z19", targetZoom: 16 },
+      { code: "D16_Yarim", name_ar: "مديرية يريم", name_en: "Yarim District", tier: "district", center_lat: 14.2965, center_lon: 44.3757, north: 14.3615, south: 14.2315, east: 44.4457, west: 44.3057, zooms: "Z15–Z19", targetZoom: 16 },
+      { code: "D17_Ar_Radmah", name_ar: "مديرية الرضمة", name_en: "Ar Radmah District", tier: "district", center_lat: 14.2000, center_lon: 44.5900, north: 14.2550, south: 14.1450, east: 44.6500, west: 44.5300, zooms: "Z15–Z19", targetZoom: 16 },
+      { code: "D18_As_Saddah", name_ar: "مديرية السدة", name_en: "As Saddah District", tier: "district", center_lat: 14.1661, center_lon: 44.3751, north: 14.2111, south: 14.1211, east: 44.4251, west: 44.3251, zooms: "Z15–Z19", targetZoom: 16 },
+      { code: "D19_An_Nadirah", name_ar: "مديرية النادرة", name_en: "An Nadirah District", tier: "district", center_lat: 14.1015, center_lon: 44.4795, north: 14.1515, south: 14.0515, east: 44.5345, west: 44.4245, zooms: "Z15–Z19", targetZoom: 16 },
+      { code: "D20_Ash_Shair", name_ar: "مديرية الشعر", name_en: "Ash Sha'ir District", tier: "district", center_lat: 14.0139, center_lon: 44.3965, north: 14.0539, south: 13.9739, east: 44.4415, west: 44.3515, zooms: "Z15–Z19", targetZoom: 16 }
     ];
-    const mapOpts = { center: [13.9667, 44.1667], zoom: 12, maxZoom: 19, minZoom: 8 };
-    const map = L.map('map', mapOpts);
-    const tileOpts = { subdomains: ['0','1','2','3'], maxZoom: 19 };
-    const localOpts = { maxZoom: 19 };
-    const layers = {
-      hybrid: L.layerGroup([
-        L.tileLayer('https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', tileOpts),
-        L.tileLayer('https://mt{s}.google.com/vt/lyrs=h&hl=ar&gl=YE&x={x}&y={y}&z={z}', tileOpts)
-      ]),
-      roadmap: L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&hl=ar&gl=YE&x={x}&y={y}&z={z}', tileOpts),
-      offline_hybrid: L.tileLayer('./workspace/tiles/hybrid/{z}/{x}/{y}.png', localOpts),
-      offline_roadmap: L.tileLayer('./workspace/tiles/roadmap/{z}/{x}/{y}.png', localOpts)
-    };
-    let currentLayer = layers.hybrid.addTo(map);
-    const bboxesLayer = L.layerGroup().addTo(map);
-    document.getElementById('layer-select').addEventListener('change', (e) => {
-      map.removeLayer(currentLayer);
-      currentLayer = layers[e.target.value];
-      currentLayer.addTo(map);
+
+    // Initialize Map centered on Ibb Governorate
+    const map = L.map('map', {
+      center: [13.9667, 44.1667],
+      zoom: 12,
+      minZoom: 8,
+      maxZoom: 20,
+      zoomControl: false // custom controls used
     });
-    function renderRegions(filterText = '') {
+
+    // Tile Layer Options
+    const tileOptions = {
+      subdomains: ['0', '1', '2', '3'],
+      maxNativeZoom: 19,
+      maxZoom: 20,
+      attribution: 'Google Maps &copy; 2026 | خريطة إب الكاملة Z12-Z19'
+    };
+
+    // Google Layers (Configured with Arabic labels and Yemeni POIs: lyrs=y, lyrs=m, lyrs=p)
+    const baseLayers = {
+      hybrid: L.layerGroup([
+        L.tileLayer('https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', tileOptions),
+        L.tileLayer('https://mt{s}.google.com/vt/lyrs=h&hl=ar&gl=YE&x={x}&y={y}&z={z}', tileOptions)
+      ]),
+      roadmap: L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&hl=ar&gl=YE&x={x}&y={y}&z={z}', tileOptions),
+      terrain: L.layerGroup([
+        L.tileLayer('https://mt{s}.google.com/vt/lyrs=p&hl=ar&gl=YE&x={x}&y={y}&z={z}', tileOptions),
+        L.tileLayer('https://mt{s}.google.com/vt/lyrs=h&hl=ar&gl=YE&x={x}&y={y}&z={z}', tileOptions)
+      ])
+    };
+
+    let activeLayer = baseLayers.hybrid.addTo(map);
+
+    // Bounding Boxes Layer for 29 Sectors
+    const bboxesGroup = L.layerGroup().addTo(map);
+    let showBBoxes = true;
+
+    // Pin Marker Layer for Inspection
+    let inspectorMarker = null;
+
+    // Update Coordinates & Zoom Status Bar
+    function updateStatusBar(lat, lng) {
+      const z = map.getZoom();
+      document.getElementById('coords-display').innerHTML = `
+        <i class="fa-solid fa-location-dot" style="color: var(--primary); margin-left: 4px;"></i>
+        خط العرض: <strong>${lat.toFixed(6)}°</strong> | خط الطول: <strong>${lng.toFixed(6)}°</strong>
+      `;
+      document.getElementById('zoom-display').innerHTML = `
+        مستوى الزوم: <strong style="color: ${z >= 18 ? '#f59e0b' : '#10b981'}">${z}</strong> (أقصى دقة Z19)
+      `;
+    }
+
+    map.on('mousemove', (e) => updateStatusBar(e.latlng.lat, e.latlng.lng));
+    map.on('moveend zoomend', () => {
+      const center = map.getCenter();
+      updateStatusBar(center.lat, center.lng);
+    });
+
+    // Reverse Geocoding Address Lookup on Click (Especially for Zoom 19)
+    map.on('click', async (e) => {
+      const lat = e.latlng.lat;
+      const lng = e.latlng.lng;
+      const zoom = map.getZoom();
+
+      // Drop/Move Inspector Marker
+      if (inspectorMarker) {
+        inspectorMarker.setLatLng(e.latlng);
+      } else {
+        inspectorMarker = L.marker(e.latlng, {
+          icon: L.divIcon({
+            className: 'custom-pin',
+            html: '<i class="fa-solid fa-location-dot" style="color: #ef4444; font-size: 32px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));"></i>',
+            iconSize: [32, 32],
+            iconAnchor: [16, 32]
+          })
+        }).addTo(map);
+      }
+
+      // Initial Popup with Coordinates
+      const popupContent = document.createElement('div');
+      popupContent.className = 'popup-box';
+      popupContent.innerHTML = `
+        <div class="popup-title">
+          <i class="fa-solid fa-crosshairs"></i>
+          <span>بيانات الموقع (زوم ${zoom})</span>
+        </div>
+        <div class="popup-address" id="popup-addr-text">
+          <i class="fa-solid fa-spinner fa-spin"></i> جاري جلب تفاصيل العنوان والشارع...
+        </div>
+        <div class="popup-coords">
+          <span>${lat.toFixed(6)}, ${lng.toFixed(6)}</span>
+          <span style="color: var(--primary);">Z${zoom}</span>
+        </div>
+        <div class="popup-actions">
+          <button class="popup-btn btn-copy" onclick="copyCoords(${lat}, ${lng})">
+            <i class="fa-solid fa-copy"></i> نسخ
+          </button>
+          <a class="popup-btn btn-gmaps" href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" rel="noopener">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> خرائط Google
+          </a>
+        </div>
+      `;
+
+      inspectorMarker.bindPopup(popupContent, { minWidth: 260 }).openPopup();
+
+      // Reverse geocode via OSM Nominatim (in Arabic) with fallback to local district bounds
+      try {
+        const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=ar`, {
+          headers: { 'Accept-Language': 'ar,en' }
+        });
+        const data = await resp.json();
+        const addr = data.display_name || (data.address ? Object.values(data.address).slice(0, 4).join('، ') : '');
+        const addrEl = document.getElementById('popup-addr-text');
+        if (addrEl) {
+          addrEl.innerHTML = `<i class="fa-solid fa-road" style="color: var(--primary); margin-left: 4px;"></i> ${addr || 'محافظة إب، اليمن'}`;
+        }
+      } catch (err) {
+        // Fallback to local region detection
+        const matched = REGIONS.find(r => lat >= r.south && lat <= r.north && lng >= r.west && lng <= r.east && r.tier !== 'governorate');
+        const fallbackText = matched ? `${matched.name_ar} — ${matched.name_en}` : 'محافظة إب، اليمن';
+        const addrEl = document.getElementById('popup-addr-text');
+        if (addrEl) {
+          addrEl.innerHTML = `<i class="fa-solid fa-map-pin" style="color: var(--primary); margin-left: 4px;"></i> ${fallbackText}`;
+        }
+      }
+    });
+
+    // Helper: Copy coordinates to clipboard
+    window.copyCoords = function(lat, lng) {
+      const text = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+      navigator.clipboard.writeText(text).then(() => {
+        alert(`تم نسخ الإحداثيات بنجاح:
+${text}`);
+      });
+    };
+
+    // Layer Switcher Buttons
+    document.querySelectorAll('.layer-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.layer-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const layerKey = btn.getAttribute('data-layer');
+        map.removeLayer(activeLayer);
+        activeLayer = baseLayers[layerKey];
+        activeLayer.addTo(map);
+      });
+    });
+
+    // Render 29 Sectors and Bounding Boxes
+    function renderRegions(filterTier = 'all', searchText = '') {
       const listEl = document.getElementById('region-list');
       listEl.innerHTML = '';
-      bboxesLayer.clearLayers();
-      REGIONS.filter(r => r.name_ar.includes(filterText) || r.name_en.toLowerCase().includes(filterText.toLowerCase()) || r.code.toLowerCase().includes(filterText.toLowerCase()))
-        .forEach(reg => {
-          const bounds = [[reg.south, reg.west], [reg.north, reg.east]];
-          const rectStyle = {
-            color: reg.tier === 'governorate' ? '#f59e0b' : (reg.tier === 'urban' ? '#10b981' : '#38bdf8'),
-            weight: reg.tier === 'governorate' ? 2 : 1.3,
-            fillOpacity: 0.05
-          };
-          const rect = L.rectangle(bounds, rectStyle).bindPopup(`<b>${reg.name_ar}</b><br>${reg.name_en}<br>Code: <code>${reg.code}</code><br>Zooms: ${reg.zooms}`);
-          rect.addTo(bboxesLayer);
-          const card = document.createElement('div');
-          card.className = 'region-card';
-          card.innerHTML = `
-            <div class="title">
-              <span>${reg.name_ar}</span>
-              <span class="badge">${reg.zooms}</span>
-            </div>
-            <div class="meta">${reg.code} — ${reg.name_en}</div>
-          `;
-          card.addEventListener('click', () => {
-            document.querySelectorAll('.region-card').forEach(c => c.classList.remove('active'));
-            card.classList.add('active');
-            const padOpts = { padding: [20, 20] };
-            map.fitBounds(bounds, padOpts);
-            rect.openPopup();
-          });
-          listEl.appendChild(card);
+      bboxesGroup.clearLayers();
+
+      const searchNorm = searchText.trim().toLowerCase();
+
+      REGIONS.filter(r => {
+        const matchesTier = (filterTier === 'all') || (r.tier === filterTier);
+        const matchesSearch = !searchNorm || 
+          r.name_ar.includes(searchNorm) || 
+          r.name_en.toLowerCase().includes(searchNorm) || 
+          r.code.toLowerCase().includes(searchNorm);
+        return matchesTier && matchesSearch;
+      }).forEach(reg => {
+        const bounds = [[reg.south, reg.west], [reg.north, reg.east]];
+
+        // Draw rectangle on map
+        if (showBBoxes) {
+          const rectColor = reg.tier === 'governorate' ? '#f59e0b' : (reg.tier === 'urban' ? '#38bdf8' : '#10b981');
+          const rect = L.rectangle(bounds, {
+            color: rectColor,
+            weight: reg.tier === 'governorate' ? 2 : 1.2,
+            dashArray: reg.tier === 'governorate' ? '4, 4' : null,
+            fillOpacity: 0.04
+          }).bindPopup(`
+            <b style="color: ${rectColor};">${reg.name_ar}</b><br>
+            <span>${reg.name_en}</span><br>
+            <small>الرمز: ${reg.code}</small><br>
+            <span style="font-size: 0.8rem; color: #10b981;">نطاق الدقة: ${reg.zooms}</span>
+          `);
+          rect.addTo(bboxesGroup);
+        }
+
+        // Add to sidebar drawer
+        const card = document.createElement('div');
+        card.className = 'region-card';
+        card.innerHTML = `
+          <div class="region-info">
+            <h4>${reg.name_ar}</h4>
+            <p>${reg.name_en} (${reg.code})</p>
+          </div>
+          <span class="zoom-badge ${reg.tier === 'governorate' ? 'full' : (reg.tier === 'urban' ? 'urban' : '')}">${reg.zooms}</span>
+        `;
+
+        card.addEventListener('click', () => {
+          map.fitBounds(bounds, { padding: [30, 30], maxZoom: reg.targetZoom });
+          if (window.innerWidth <= 640) {
+            document.getElementById('sidebar').classList.remove('open');
+          }
         });
+
+        listEl.appendChild(card);
+      });
     }
-    document.getElementById('search-box').addEventListener('input', (e) => renderRegions(e.target.value));
-    map.on('moveend zoomend', () => {
-      const c = map.getCenter();
-      document.getElementById('coords-bar').textContent = `الزوم الحالي: ${map.getZoom()} | الإحداثيات: ${c.lat.toFixed(4)}, ${c.lng.toFixed(4)}`;
+
+    // Quick Tool: Jump to Zoom 19 (Max Detail Level)
+    document.getElementById('btn-zoom-19').addEventListener('click', () => {
+      map.setZoom(19);
     });
+
+    // Quick Tool: Locate Me via GPS
+    document.getElementById('btn-locate').addEventListener('click', () => {
+      if (!navigator.geolocation) {
+        alert('ميزة تحديد الموقع غير مدعومة في متصفحك.');
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          map.flyTo([lat, lng], 18);
+          L.circleMarker([lat, lng], { radius: 8, color: '#2563eb', fillColor: '#3b82f6', fillOpacity: 0.8 }).addTo(map)
+            .bindPopup('<b>📍 موقعك الحالي</b>').openPopup();
+        },
+        (err) => {
+          alert('تعذر تحديد الموقع: ' + err.message);
+        },
+        { enableHighAccuracy: true }
+      );
+    });
+
+    // Quick Tool: Toggle Bounding Boxes
+    document.getElementById('btn-toggle-bboxes').addEventListener('click', () => {
+      showBBoxes = !showBBoxes;
+      renderRegions(currentFilter, document.getElementById('search-input').value);
+    });
+
+    // Quick Tool: Fullscreen Toggle
+    document.getElementById('btn-fullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    // Quick Tool: Reset View to Full Ibb Governorate
+    document.getElementById('btn-reset-view').addEventListener('click', () => {
+      map.flyTo([13.9667, 44.1667], 12);
+    });
+
+    // Sidebar Drawer Toggle
+    const sidebarEl = document.getElementById('sidebar');
+    document.getElementById('btn-toggle-sidebar').addEventListener('click', () => sidebarEl.classList.toggle('open'));
+    document.getElementById('btn-close-sidebar').addEventListener('click', () => sidebarEl.classList.remove('open'));
+
+    // Sidebar Filter Tabs
+    let currentFilter = 'all';
+    document.querySelectorAll('.sidebar-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentFilter = tab.getAttribute('data-filter');
+        renderRegions(currentFilter, document.getElementById('search-input').value);
+      });
+    });
+
+    // Search Input Event
+    const searchInput = document.getElementById('search-input');
+    searchInput.addEventListener('input', (e) => {
+      renderRegions(currentFilter, e.target.value);
+    });
+
+    document.getElementById('btn-search-exec').addEventListener('click', () => {
+      const q = searchInput.value.trim();
+      if (!q) return;
+      const matched = REGIONS.find(r => r.name_ar.includes(q) || r.name_en.toLowerCase().includes(q.toLowerCase()) || r.code.toLowerCase().includes(q.toLowerCase()));
+      if (matched) {
+        map.fitBounds([[matched.south, matched.west], [matched.north, matched.east]], { padding: [30, 30], maxZoom: matched.targetZoom });
+      } else {
+        // External geocoding search for villages / places in Ibb
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q + ' إب اليمن')}&accept-language=ar`)
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.length > 0) {
+              const item = data[0];
+              map.flyTo([parseFloat(item.lat), parseFloat(item.lon)], 17);
+            } else {
+              alert('لم يتم العثور على نتائج للبحث في محافظة إب.');
+            }
+          });
+      }
+    });
+
+    // Initial Render
     renderRegions();
   </script>
 </body>
