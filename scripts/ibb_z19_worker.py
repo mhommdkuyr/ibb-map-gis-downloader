@@ -260,7 +260,7 @@ def fetch_tile_bytes(session, mode, z, x, y):
             lyrs = "m" if mode == "roadmap" else "y"
             url = f"https://mt{srv}.google.com/vt/lyrs={lyrs}&hl=ar&gl=YE&x={x}&y={y}&z={z}"
             resp = session.get(url, timeout=12)
-            if resp.status_code == 200 and len(resp.content) > 400:
+            if resp.status_code == 200 and len(resp.content) > 80:
                 im = Image.open(BytesIO(resp.content)).convert("RGB")
                 buf = BytesIO()
                 im.save(buf, format="PNG")
