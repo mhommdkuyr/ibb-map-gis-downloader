@@ -1,11 +1,11 @@
 {
-  "updated_at": "2026-11-15T01:30:00+03:00",
+  "updated_at": "2026-11-15T19:14:00+03:00",
   "summary": {
     "hybrid_completed": 676983,
     "hybrid_total": 676983,
-    "roadmap_completed": 244511,
+    "roadmap_completed": 676983,
     "roadmap_total": 676983,
-    "combined_completed": 921494,
+    "combined_completed": 1353966,
     "combined_total": 1353966
   },
   "regions": {
@@ -13,291 +13,291 @@
       "name_ar": "محافظة إب كاملة",
       "hybrid_completed": 12100,
       "hybrid_total": 12100,
-      "roadmap_completed": 10738,
+      "roadmap_completed": 12100,
       "roadmap_total": 12100,
-      "combined_completed": 22838,
+      "combined_completed": 24200,
       "combined_total": 24200,
-      "pct": 94.4
+      "pct": 100.0
     },
     "D01_Ibb": {
       "name_ar": "مديرية إب (ريف إب)",
       "hybrid_completed": 21589,
       "hybrid_total": 21589,
-      "roadmap_completed": 14216,
+      "roadmap_completed": 21589,
       "roadmap_total": 21589,
-      "combined_completed": 35805,
+      "combined_completed": 43178,
       "combined_total": 43178,
-      "pct": 82.9
+      "pct": 100.0
     },
     "D02_Al_Dhihar": {
       "name_ar": "مديرية الظهار",
       "hybrid_completed": 9032,
       "hybrid_total": 9032,
-      "roadmap_completed": 7181,
+      "roadmap_completed": 9032,
       "roadmap_total": 9032,
-      "combined_completed": 16213,
+      "combined_completed": 18064,
       "combined_total": 18064,
-      "pct": 89.8
+      "pct": 100.0
     },
     "D03_Al_Mashannah": {
       "name_ar": "مديرية المشنة",
       "hybrid_completed": 9018,
       "hybrid_total": 9018,
-      "roadmap_completed": 7198,
+      "roadmap_completed": 9018,
       "roadmap_total": 9018,
-      "combined_completed": 16216,
+      "combined_completed": 18036,
       "combined_total": 18036,
-      "pct": 89.9
+      "pct": 100.0
     },
     "D04_Jiblah": {
       "name_ar": "مديرية جبلة",
       "hybrid_completed": 16772,
       "hybrid_total": 16772,
-      "roadmap_completed": 9938,
+      "roadmap_completed": 16772,
       "roadmap_total": 16772,
-      "combined_completed": 26710,
+      "combined_completed": 33544,
       "combined_total": 33544,
-      "pct": 79.6
+      "pct": 100.0
     },
     "D05_Badan": {
       "name_ar": "مديرية بعدان",
       "hybrid_completed": 26761,
       "hybrid_total": 26761,
-      "roadmap_completed": 11295,
+      "roadmap_completed": 26761,
       "roadmap_total": 26761,
-      "combined_completed": 38056,
+      "combined_completed": 53522,
       "combined_total": 53522,
-      "pct": 71.1
+      "pct": 100.0
     },
     "D06_As_Sabrah": {
       "name_ar": "مديرية السبرة",
       "hybrid_completed": 26887,
       "hybrid_total": 26887,
-      "roadmap_completed": 7871,
+      "roadmap_completed": 26887,
       "roadmap_total": 26887,
-      "combined_completed": 34758,
+      "combined_completed": 53774,
       "combined_total": 53774,
-      "pct": 64.6
+      "pct": 100.0
     },
     "D07_As_Sayyani": {
       "name_ar": "مديرية السياني",
       "hybrid_completed": 21466,
       "hybrid_total": 21466,
-      "roadmap_completed": 9435,
+      "roadmap_completed": 21466,
       "roadmap_total": 21466,
-      "combined_completed": 30901,
+      "combined_completed": 42932,
       "combined_total": 42932,
-      "pct": 72.0
+      "pct": 100.0
     },
     "D08_Dhi_As_Sufal": {
       "name_ar": "مديرية ذي السفال",
       "hybrid_completed": 26746,
       "hybrid_total": 26746,
-      "roadmap_completed": 9570,
+      "roadmap_completed": 26746,
       "roadmap_total": 26746,
-      "combined_completed": 36316,
+      "combined_completed": 53492,
       "combined_total": 53492,
-      "pct": 67.9
+      "pct": 100.0
     },
     "D09_Mudhaykhirah": {
       "name_ar": "مديرية مذيخرة",
       "hybrid_completed": 26751,
       "hybrid_total": 26751,
-      "roadmap_completed": 11441,
+      "roadmap_completed": 26751,
       "roadmap_total": 26751,
-      "combined_completed": 38192,
+      "combined_completed": 53502,
       "combined_total": 53502,
-      "pct": 71.4
+      "pct": 100.0
     },
     "D10_Al_Udayn": {
       "name_ar": "مديرية العدين",
       "hybrid_completed": 39265,
       "hybrid_total": 39265,
-      "roadmap_completed": 13998,
+      "roadmap_completed": 39265,
       "roadmap_total": 39265,
-      "combined_completed": 53263,
+      "combined_completed": 78530,
       "combined_total": 78530,
-      "pct": 67.8
+      "pct": 100.0
     },
     "D11_Far_Al_Udayn": {
       "name_ar": "مديرية فرع العدين",
       "hybrid_completed": 46042,
       "hybrid_total": 46042,
-      "roadmap_completed": 14905,
+      "roadmap_completed": 46042,
       "roadmap_total": 46042,
-      "combined_completed": 60947,
+      "combined_completed": 92084,
       "combined_total": 92084,
-      "pct": 66.2
+      "pct": 100.0
     },
     "D12_Hazm_Al_Udayn": {
       "name_ar": "مديرية حزم العدين",
       "hybrid_completed": 38852,
       "hybrid_total": 38852,
-      "roadmap_completed": 5525,
+      "roadmap_completed": 38852,
       "roadmap_total": 38852,
-      "combined_completed": 44377,
+      "combined_completed": 77704,
       "combined_total": 77704,
-      "pct": 57.1
+      "pct": 100.0
     },
     "D13_Hubaysh": {
       "name_ar": "مديرية حبيش",
       "hybrid_completed": 26630,
       "hybrid_total": 26630,
-      "roadmap_completed": 9594,
+      "roadmap_completed": 26630,
       "roadmap_total": 26630,
-      "combined_completed": 36224,
+      "combined_completed": 53260,
       "combined_total": 53260,
-      "pct": 68.0
+      "pct": 100.0
     },
     "D14_Al_Makhadir": {
       "name_ar": "مديرية المخادر",
       "hybrid_completed": 26615,
       "hybrid_total": 26615,
-      "roadmap_completed": 13431,
+      "roadmap_completed": 26615,
       "roadmap_total": 26615,
-      "combined_completed": 40046,
+      "combined_completed": 53230,
       "combined_total": 53230,
-      "pct": 75.2
+      "pct": 100.0
     },
     "D15_Al_Qafr": {
       "name_ar": "مديرية القفر",
       "hybrid_completed": 66123,
       "hybrid_total": 66123,
-      "roadmap_completed": 7429,
+      "roadmap_completed": 66123,
       "roadmap_total": 66123,
-      "combined_completed": 73552,
+      "combined_completed": 132246,
       "combined_total": 132246,
-      "pct": 55.6
+      "pct": 100.0
     },
     "D16_Yarim": {
       "name_ar": "مديرية يريم",
       "hybrid_completed": 53772,
       "hybrid_total": 53772,
-      "roadmap_completed": 16214,
+      "roadmap_completed": 53772,
       "roadmap_total": 53772,
-      "combined_completed": 69986,
+      "combined_completed": 107544,
       "combined_total": 107544,
-      "pct": 65.1
+      "pct": 100.0
     },
     "D17_Ar_Radmah": {
       "name_ar": "مديرية الرضمة",
       "hybrid_completed": 39143,
       "hybrid_total": 39143,
-      "roadmap_completed": 7671,
+      "roadmap_completed": 39143,
       "roadmap_total": 39143,
-      "combined_completed": 46814,
+      "combined_completed": 78286,
       "combined_total": 78286,
-      "pct": 59.8
+      "pct": 100.0
     },
     "D18_As_Saddah": {
       "name_ar": "مديرية السدة",
       "hybrid_completed": 26559,
       "hybrid_total": 26559,
-      "roadmap_completed": 7565,
+      "roadmap_completed": 26559,
       "roadmap_total": 26559,
-      "combined_completed": 34124,
+      "combined_completed": 53118,
       "combined_total": 53118,
-      "pct": 64.2
+      "pct": 100.0
     },
     "D19_An_Nadirah": {
       "name_ar": "مديرية النادرة",
       "hybrid_completed": 32761,
       "hybrid_total": 32761,
-      "roadmap_completed": 8522,
+      "roadmap_completed": 32761,
       "roadmap_total": 32761,
-      "combined_completed": 41283,
+      "combined_completed": 65522,
       "combined_total": 65522,
-      "pct": 63.0
+      "pct": 100.0
     },
     "D20_Ash_Shair": {
       "name_ar": "مديرية الشعر",
       "hybrid_completed": 21491,
       "hybrid_total": 21491,
-      "roadmap_completed": 7841,
+      "roadmap_completed": 21491,
       "roadmap_total": 21491,
-      "combined_completed": 29332,
+      "combined_completed": 42982,
       "combined_total": 42982,
-      "pct": 68.2
+      "pct": 100.0
     },
     "U01_Ibb_City": {
       "name_ar": "مدينة إب",
       "hybrid_completed": 19783,
       "hybrid_total": 19783,
-      "roadmap_completed": 13422,
+      "roadmap_completed": 19783,
       "roadmap_total": 19783,
-      "combined_completed": 33205,
+      "combined_completed": 39566,
       "combined_total": 39566,
-      "pct": 83.9
+      "pct": 100.0
     },
     "U02_Al_Udayn_City": {
       "name_ar": "مدينة العدين",
       "hybrid_completed": 6539,
       "hybrid_total": 6539,
-      "roadmap_completed": 2553,
+      "roadmap_completed": 6539,
       "roadmap_total": 6539,
-      "combined_completed": 9092,
+      "combined_completed": 13078,
       "combined_total": 13078,
-      "pct": 69.5
+      "pct": 100.0
     },
     "U03_Al_Qaidah_City": {
       "name_ar": "مدينة القاعدة",
       "hybrid_completed": 6916,
       "hybrid_total": 6916,
-      "roadmap_completed": 4886,
+      "roadmap_completed": 6916,
       "roadmap_total": 6916,
-      "combined_completed": 11802,
+      "combined_completed": 13832,
       "combined_total": 13832,
-      "pct": 85.3
+      "pct": 100.0
     },
     "U04_Yarim_City": {
       "name_ar": "مدينة يريم",
       "hybrid_completed": 7773,
       "hybrid_total": 7773,
-      "roadmap_completed": 3868,
+      "roadmap_completed": 7773,
       "roadmap_total": 7773,
-      "combined_completed": 11641,
+      "combined_completed": 15546,
       "combined_total": 15546,
-      "pct": 74.9
+      "pct": 100.0
     },
     "U05_Dhi_As_Sufal_City": {
       "name_ar": "مدينة ذي السفال",
       "hybrid_completed": 5260,
       "hybrid_total": 5260,
-      "roadmap_completed": 1957,
+      "roadmap_completed": 5260,
       "roadmap_total": 5260,
-      "combined_completed": 7217,
+      "combined_completed": 10520,
       "combined_total": 10520,
-      "pct": 68.6
+      "pct": 100.0
     },
     "U06_Al_Makhadir_City": {
       "name_ar": "مدينة المخادر",
       "hybrid_completed": 5345,
       "hybrid_total": 5345,
-      "roadmap_completed": 2795,
+      "roadmap_completed": 5345,
       "roadmap_total": 5345,
-      "combined_completed": 8140,
+      "combined_completed": 10690,
       "combined_total": 10690,
-      "pct": 76.1
+      "pct": 100.0
     },
     "U07_An_Nadirah_City": {
       "name_ar": "مدينة النادرة",
       "hybrid_completed": 5518,
       "hybrid_total": 5518,
-      "roadmap_completed": 2188,
+      "roadmap_completed": 5518,
       "roadmap_total": 5518,
-      "combined_completed": 7706,
+      "combined_completed": 11036,
       "combined_total": 11036,
-      "pct": 69.8
+      "pct": 100.0
     },
     "U08_As_Saddah_City": {
       "name_ar": "مدينة السدة",
       "hybrid_completed": 5474,
       "hybrid_total": 5474,
-      "roadmap_completed": 1264,
+      "roadmap_completed": 5474,
       "roadmap_total": 5474,
-      "combined_completed": 6738,
+      "combined_completed": 10948,
       "combined_total": 10948,
-      "pct": 61.5
+      "pct": 100.0
     }
   }
 }
