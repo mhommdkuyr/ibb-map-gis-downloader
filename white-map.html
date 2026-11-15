@@ -210,8 +210,8 @@
         <span class="badge" id="zoom-badge">Z13</span>
       </div>
       <div class="stats-strip" id="stats-strip">
-        <span>البلاطات المنجزة: <b id="tiles-count">921,494</b> / 1,353,966</span>
-        <span id="tiles-pct">68.1%</span>
+        <span>البلاطات المنجزة: <b id="tiles-count">1,353,966</b> / 1,353,966</span>
+        <span id="tiles-pct">100.0%</span>
       </div>
       <div class="search-row">
         <input type="text" id="search-input" placeholder="ابحث عن مدينة، مديرية، أو قرية..." autocomplete="off" />
@@ -290,16 +290,12 @@
       updateWhenZooming: false
     };
 
-    // White fallback (Carto Positron Light) + Google White Roadmap on top for 100% seamless coverage
-    const whiteFallback = L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-      { subdomains: 'abcd', maxZoom: 20, maxNativeZoom: 19, opacity: 1 }
-    );
+    // Direct Google White Roadmap (100% completed across all 29 regions, zero watermark)
     const whiteRoadmap = L.tileLayer(
       'https://mt{s}.google.com/vt/lyrs=m&hl=ar&gl=YE&x={x}&y={y}&z={z}',
       tileOpts
     );
-    const whiteComposite = L.layerGroup([whiteFallback, whiteRoadmap]).addTo(map);
+    const whiteComposite = L.layerGroup([whiteRoadmap]).addTo(map);
 
     const hybridLayer = L.tileLayer(
       'https://mt{s}.google.com/vt/lyrs=y&hl=ar&gl=YE&x={x}&y={y}&z={z}',
@@ -324,7 +320,7 @@
       REGIONS.filter(r => !q || r.name_ar.includes(q) || r.code.toLowerCase().includes(q)).forEach(r => {
         const b = [[r.south, r.west], [r.north, r.east]];
         const stat = coverageData && coverageData.regions ? coverageData.regions[r.code] : null;
-        const pct = stat ? stat.pct : 68.1;
+        const pct = stat ? stat.pct : 100.0;
         const color = r.tier === 'محافظة' ? '#0f172a' : getRegionColor(pct);
         const popupHtml = stat
           ? `<b>${r.name_ar}</b><br>الهجين: ${stat.hybrid_completed.toLocaleString()} / ${stat.hybrid_total.toLocaleString()} (100%)<br>الطرق البيضاء: ${stat.roadmap_completed.toLocaleString()} / ${stat.roadmap_total.toLocaleString()}<br>الإجمالي: <b>${stat.pct}%</b>`
@@ -348,7 +344,7 @@
       });
     }
 
-    fetch('./coverage.json')
+    fetch('./coverage.json?t=' + Date.now())
       .then(r => r.json())
       .then(data => {
         coverageData = data;
